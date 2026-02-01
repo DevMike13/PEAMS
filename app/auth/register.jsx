@@ -15,11 +15,13 @@ const roles = ['Admin', 'Staff'];
 const Register = () => {
   const router = useRouter();
   const [activeRole, setActiveRole] = useState(roles[0]);
+  const [fullname, setFullname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isFocusedFullname, setIsFocusedFullname] = useState(false);
   const [isFocusedEmail, setIsFocusedEmail] = useState(false);
   const [isFocusedPassword, setIsFocusedPassword] = useState(false);
   const [isFocusedConfirmPassword, setIsFocusedConfirmPassword] = useState(false);
@@ -35,6 +37,14 @@ const Register = () => {
     // Clear previous errors
     setError('');
     setLoading(true);
+
+    if (!fullname.trim()) {
+      const errorMsg = 'Full name is required.';
+      setError(errorMsg);
+      Alert.alert("Error", errorMsg);
+      setLoading(false);
+      return;
+    }
 
     // Input validation
     if (!email.trim()) {
@@ -76,6 +86,7 @@ const Register = () => {
 
       console.log('Creating user document in Firestore...');
       await setDoc(doc(firestoreDB, 'users', userCred.user.uid), { 
+        fullname: fullname,   
         role: activeRole.toLowerCase(),
         email: email,
         isAccepted: false,
@@ -132,151 +143,158 @@ const Register = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Image 
-        source={images.backgroundTop}
-        style={styles.bgTop}
-        resizeMode='contain'
-      />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <Image 
-            source={images.logo}
-            style={styles.imageLogo}
-            resizeMode='contain'
-          />
-          <Text style={styles.title}>Sign Up</Text>
-          <View style={styles.tabContainer}>
-            {roles.map((item) => (
-              <TouchableOpacity
-                key={item}
-                onPress={() => setActiveRole(item)}
-                style={[
-                  styles.tabButton,
-                  activeRole === item ? styles.activeTabButton : styles.inactiveTabButton,
-                ]}
-              >
-                <Text
+        <View style={styles.innerContainer}>
+          <View style={styles.header}>
+            <Image source={images.logo} style={styles.imageLogo} resizeMode="contain" />
+            <Text style={styles.headerTitle}>PEAMS</Text>
+          </View>
+          <View style={styles.inputsContainer}>
+            <Text style={styles.title}>Sign Up</Text>
+            <View style={styles.tabContainer}>
+              {roles.map((item) => (
+                <TouchableOpacity
+                  key={item}
+                  onPress={() => setActiveRole(item)}
                   style={[
-                    styles.tabText,
-                    activeRole === item ? styles.activeTabText : styles.inactiveTabText,
+                    styles.tabButton,
+                    activeRole === item ? styles.activeTabButton : styles.inactiveTabButton,
                   ]}
                 >
-                  {item}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <View style={styles.inputMainContainer}>
-            <Text style={styles.label}>Email address</Text>
-            <View 
-              style={[
-                styles.inputContainer,
-                isFocusedEmail && styles.inputContainerFocused
-              ]}
-            >
-              <TextInput 
-                placeholder="Enter email" 
-                value={email}
-                onChangeText={setEmail} 
-                style={styles.input}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                onFocus={() => setIsFocusedEmail(true)} 
-                onBlur={() => setIsFocusedEmail(false)} 
-              />
+                  <Text
+                    style={[
+                      styles.tabText,
+                      activeRole === item ? styles.activeTabText : styles.inactiveTabText,
+                    ]}
+                  >
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
-          </View>
-          
-          <View style={styles.inputMainContainer}>
-            <Text style={styles.label}>Password</Text>
-            <View 
-              style={[
-                styles.inputContainer,
-                isFocusedPassword && styles.inputContainerFocused
-              ]}
-            >
-              <TextInput 
-                placeholder="Enter password" 
-                onFocus={() => setIsFocusedPassword(true)} 
-                onBlur={() => setIsFocusedPassword(false)} 
-                secureTextEntry={!showPassword} 
-                value={password} 
-                onChangeText={setPassword} 
-                style={styles.input}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <Ionicons
-                  name={`${!showPassword ? 'eye-off-outline' : "eye-outline"}`}
-                  size={28}
-                  color='blue'
+            
+            <View style={styles.inputMainContainer}>
+              <Text style={styles.label}>Full Name</Text>
+              <View 
+                style={[
+                  styles.inputContainer,
+                  isFocusedFullname && styles.inputContainerFocused
+                ]}
+              >
+                <TextInput 
+                  placeholder="Enter Fullname" 
+                  value={fullname}
+                  onChangeText={setFullname} 
+                  style={styles.input}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  onFocus={() => setIsFocusedFullname(true)} 
+                  onBlur={() => setIsFocusedFullname(false)} 
                 />
-              </TouchableOpacity>
+              </View>
             </View>
-          </View>
 
-          <View style={styles.inputMainContainer}>
-            <Text style={styles.label}>Confirm Password</Text>
-            <View style={[styles.inputContainer, isFocusedConfirmPassword && styles.inputContainerFocused]}>
-              <TextInput
-                placeholder="Confirm password"
-                onFocus={() => setIsFocusedConfirmPassword(true)}
-                onBlur={() => setIsFocusedConfirmPassword(false)}
-                secureTextEntry={!showConfirmPassword}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                style={styles.input}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                <Ionicons
-                  name={`${!showConfirmPassword ? 'eye-off-outline' : "eye-outline"}`}
-                  size={28}
-                  color='blue'
+            <View style={styles.inputMainContainer}>
+              <Text style={styles.label}>Email</Text>
+              <View 
+                style={[
+                  styles.inputContainer,
+                  isFocusedEmail && styles.inputContainerFocused
+                ]}
+              >
+                <TextInput 
+                  placeholder="Enter email" 
+                  value={email}
+                  onChangeText={setEmail} 
+                  style={styles.input}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  onFocus={() => setIsFocusedEmail(true)} 
+                  onBlur={() => setIsFocusedEmail(false)} 
                 />
-              </TouchableOpacity>
+              </View>
             </View>
-          </View>
+            
+            <View style={styles.inputMainContainer}>
+              <Text style={styles.label}>Password</Text>
+              <View 
+                style={[
+                  styles.inputContainer,
+                  isFocusedPassword && styles.inputContainerFocused
+                ]}
+              >
+                <TextInput 
+                  placeholder="Enter password" 
+                  onFocus={() => setIsFocusedPassword(true)} 
+                  onBlur={() => setIsFocusedPassword(false)} 
+                  secureTextEntry={!showPassword} 
+                  value={password} 
+                  onChangeText={setPassword} 
+                  style={styles.input}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                  <Ionicons
+                    name={`${!showPassword ? 'eye-off-outline' : "eye-outline"}`}
+                    size={28}
+                    color='blue'
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
 
-          {error ? (
-            <Text style={styles.errorText}>{error}</Text>
-          ) : null}
+            <View style={styles.inputMainContainer}>
+              <Text style={styles.label}>Confirm Password</Text>
+              <View style={[styles.inputContainer, isFocusedConfirmPassword && styles.inputContainerFocused]}>
+                <TextInput
+                  placeholder="Confirm password"
+                  onFocus={() => setIsFocusedConfirmPassword(true)}
+                  onBlur={() => setIsFocusedConfirmPassword(false)}
+                  secureTextEntry={!showConfirmPassword}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  style={styles.input}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                  <Ionicons
+                    name={`${!showConfirmPassword ? 'eye-off-outline' : "eye-outline"}`}
+                    size={28}
+                    color='blue'
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
 
-          <TouchableOpacity 
-            onPress={handleRegister} 
-            style={[styles.registerButton, loading && styles.registerButtonDisabled]}
-            disabled={loading}
-          >
-            <Text style={styles.buttonText}>
-              {loading ? 'Signing Up...' : 'Sign Up'}
-            </Text>
-          </TouchableOpacity>
+            {error ? (
+              <Text style={styles.errorText}>{error}</Text>
+            ) : null}
 
-          <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => router.push('/auth/login')}>
-              <Text style={styles.registerButtonText}>Sign In</Text>
+            <TouchableOpacity 
+              onPress={handleRegister} 
+              style={[styles.registerButton, loading && styles.registerButtonDisabled]}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>
+                {loading ? 'Signing Up...' : 'Sign Up'}
+              </Text>
             </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-      <Image 
-        source={images.backgroundBottom}
-        style={styles.bgBottom}
-        resizeMode='contain'
-      />
 
+            <View style={styles.registerContainer}>
+              <Text style={styles.registerText}>Already have an account? </Text>
+              <TouchableOpacity onPress={() => router.push('/auth/login')}>
+                <Text style={styles.registerButtonText}>Log In</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -295,47 +313,70 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingBottom: 80,
   },
-  bgTop:{
-    position: 'absolute',
-    width: '100%',
-    top: 0
+  innerContainer: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    backgroundColor: 'white',
+    elevation: 5,
+    width: '85%',
+    height: '90%',
+    marginHorizontal: 'auto',
+    marginVertical: 'auto',
+    borderRadius: 30,
   },
-  bgBottom:{
-    position: 'absolute',
-    width: width,
-    bottom: -30,
-    zIndex: -10
+  inputsContainer:{
+    paddingHorizontal: 20
+  },
+  header:{
+    height: 70,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    flexDirection: 'row',
+    justifyContent: 'center', 
+    alignItems: 'center',
+    gap: 5
+  },
+  headerTitle:{
+    fontFamily: 'Inter-Bold',
+    fontSize: 24,
+    color: '#255ba0',
   },
   imageLogo: {
-    marginHorizontal: 'auto'
+    width: 50,
+    height: 50,
   },
   title: {
-    fontFamily: 'Poppins-SemiBold',
-    fontSize: 30,
-    textAlign: 'center'
+    fontFamily: 'Inter-Bold',
+    fontSize: 26,
+    textAlign: 'center',
+    marginBottom: 16,
+    color: '#255ba0',
+    marginTop: 12
   },
   label: {
-    fontFamily: 'Poppins-Medium',
+    fontFamily: 'Inter-Medium',
     fontSize: 16,
-    marginBottom: 8,
-    color: '#333',
+    marginBottom: 5,
+    color: '#255ba0',
   },
   inputMainContainer:{
     width: '100%',
     height: 'auto',
-    marginVertical: 10
+    marginVertical: 6
   },
   input : {
     flex : 1,
-    fontFamily: 'Poppins-Regular'
+    fontFamily: 'Inter-Regular'
   },
   inputContainer: {
     width: '100%',
-    height: 64,
+    height: 50,
     paddingHorizontal: 16,
     borderWidth: 2,
     borderColor: '#a1a2a8',
-    borderRadius: 16,
+    borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -343,48 +384,46 @@ const styles = StyleSheet.create({
     borderColor: '#3B82F6',
   },
   errorText: {
-    fontFamily: 'Poppins-Regular',
+    fontFamily: 'Inter-Regular',
     color: 'red',
     textAlign: 'center',
     marginTop: 10,
     fontSize: 14,
   },
   forgetText: {
-    fontFamily: 'Poppins-Light',
+    fontFamily: 'Inter-Regular',
     color: 'blue'
   },
   registerButton:{
-    width: '70%',
-    backgroundColor: '#c6c6c6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 14,
-    borderRadius: 30,
-    marginHorizontal: 'auto',
-    marginTop: 16,
-    borderWidth: 2,
-    borderColor: '#a1a2a8',
+    width: '100%', 
+    backgroundColor: '#4b90df',
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    paddingVertical: 10, 
+    borderRadius: 10, 
+    marginHorizontal: 'auto', 
+    marginTop: 16, 
+    marginBottom: 10
   },
   registerButtonDisabled: {
     backgroundColor: '#d3d3d3',
     opacity: 0.7,
   },
   buttonText: {
-    fontFamily: 'Poppins-SemiBold',
+    fontFamily: 'Inter-Bold',
     fontSize: 20,
     color: 'white'
   },
   registerContainer:{
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 50
+    alignItems: 'center'
   },
   registerText: {
-    fontFamily: 'Poppins-Light'
+    fontFamily: 'Inter-Regular'
   },
   registerButtonText: {
-    fontFamily: 'Poppins-SemiBold',
+    fontFamily: 'Inter-Bold',
     color: 'blue'
   },
   tabContainer: {
@@ -392,12 +431,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#c4c4c4',
     borderRadius: 999,
     overflow: 'hidden',
-    marginBottom: 10,
-    marginTop: 10,
+    marginBottom: 10
   },
   tabButton: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 5,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -412,13 +450,13 @@ const styles = StyleSheet.create({
   
   tabText: {
     fontSize: 18,
-    fontFamily: 'Poppins-Regular',
+    fontFamily: 'Inter-Regular',
     textAlign: 'center',
   },
   
   activeTabText: {
     color: '#ffffff',
-    fontFamily: 'Poppins-SemiBold',
+    fontFamily: 'Inter-Bold',
   },
   
   inactiveTabText: {

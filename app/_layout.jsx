@@ -26,6 +26,15 @@ export default function Layout() {
     "Poppins-Regular": require("../assets/fonts/Poppins-Regular.ttf"),
     "Poppins-SemiBold": require("../assets/fonts/Poppins-SemiBold.ttf"),
     "Poppins-Thin": require("../assets/fonts/Poppins-Thin.ttf"),
+
+    "Inter-Black": require("../assets/fonts/Inter-UI-Black.otf"),
+    "Inter-Black-Italic": require("../assets/fonts/Inter-UI-BlackItalic.otf"),
+    "Inter-Bold": require("../assets/fonts/Inter-UI-Bold.otf"),
+    "Inter-Bold-Italic": require("../assets/fonts/Inter-UI-BoldItalic.otf"),
+    "Inter-Italic": require("../assets/fonts/Inter-UI-Italic.otf"),
+    "Inter-Medium": require("../assets/fonts/Inter-UI-Medium.otf"),
+    "Inter-Medium-Italic": require("../assets/fonts/Inter-UI-MediumItalic.otf"),
+    "Inter-Regular": require("../assets/fonts/Inter-UI-Regular.otf"),
   });
 
   // ✅ Grab push notification utils

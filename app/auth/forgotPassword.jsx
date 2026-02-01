@@ -4,13 +4,14 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { images } from "../../constants";
-import { auth } from "../../firebase"; // ✅ Make sure this is imported
+import { auth } from "../../firebase";
 
 const { width } = Dimensions.get("window");
 
 const ForgotPassword = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [isFocusedEmail, setIsFocusedEmail] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleForgotPassword = async () => {
@@ -43,38 +44,47 @@ const ForgotPassword = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Image source={images.backgroundTop} style={styles.bgTop} resizeMode="contain" />
+      <View style={styles.innerContainer}>
+        <View style={styles.header}>
+          <Image source={images.logo} style={styles.imageLogo} resizeMode="contain" />
+          <Text style={styles.headerTitle}>Forgot Password</Text>
+        </View>
+        <View style={styles.inputsContainer}>
+          <Text style={styles.subtitle}>
+            Enter your email below and we’ll send you a password reset link.
+          </Text>
 
-      <Image source={images.logo} style={styles.imageLogo} resizeMode="contain" />
-      <Text style={styles.title}>Forgot Password</Text>
-      <Text style={styles.subtitle}>
-        Enter your email below and we’ll send you a password reset link.
-      </Text>
+          <View style={styles.inputMainContainer}>
+            <Text style={styles.label}>Email</Text>
+            <View style={[styles.inputContainer, isFocusedEmail && styles.inputContainerFocused]}>
+              <TextInput
+                placeholder="Enter email"
+                value={email}
+                onChangeText={setEmail}
+                style={styles.input}
+                onFocus={() => setIsFocusedEmail(true)}
+                onBlur={() => setIsFocusedEmail(false)}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+          </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Enter your email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
-      />
+          <TouchableOpacity
+            style={[styles.button, loading && { opacity: 0.7 }]}
+            onPress={handleForgotPassword}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>
+              {loading ? "Sending..." : "Send Reset Link"}
+            </Text>
+          </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[styles.button, loading && { opacity: 0.7 }]}
-        onPress={handleForgotPassword}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? "Sending..." : "Send Reset Link"}
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => router.replace("/auth/login")}>
-        <Text style={styles.resendText}>Back to Login</Text>
-      </TouchableOpacity>
-
-      <Image source={images.backgroundBottom} style={styles.bgBottom} resizeMode="contain" />
+          <TouchableOpacity onPress={() => router.replace("/auth/login")}>
+            <Text style={styles.resendText}>Back to Login</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </SafeAreaView>
   );
 };
@@ -84,67 +94,122 @@ export default ForgotPassword;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#eaeaea",
     position: "relative",
   },
-  bgTop: {
-    position: "absolute",
-    width: "100%",
-    top: 0,
+  innerContainer: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    backgroundColor: 'white',
+    elevation: 5,
+    width: '85%',
+    height: '60%',
+    marginHorizontal: 'auto',
+    marginVertical: 'auto',
+    borderRadius: 30,
   },
-  bgBottom: {
-    position: "absolute",
-    width: width,
-    bottom: -30,
-    zIndex: -10,
+  inputsContainer:{
+    paddingHorizontal: 20
+  },
+  header:{
+    backgroundColor: '#4b90df',
+    height: 70,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    flexDirection: 'row',
+    justifyContent: 'center', 
+    alignItems: 'center',
+    gap: 5
+  },
+  headerTitle:{
+    fontFamily: 'Inter-Bold',
+    fontSize: 24,
+    color: 'white'
   },
   imageLogo: {
-    marginHorizontal: "auto",
+    width: 50,
+    height: 50,
   },
   title: {
-    fontSize: 28,
-    fontFamily: "Poppins-SemiBold",
-    marginBottom: 10,
+    fontFamily: 'Inter-Bold',
+    fontSize: 32,
+    textAlign: 'center',
+    marginBottom: 16,
+    color: '#255ba0',
+    marginTop: 12
+  },
+  label: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 16,
+    marginBottom: 5,
+    color: '#255ba0',
   },
   subtitle: {
     fontSize: 16,
     textAlign: "center",
     marginBottom: 20,
-    fontFamily: "Poppins-Regular",
+    marginTop: 20,
+    fontFamily: "Inter-Regular",
     color: "#555",
   },
-  input: {
-    width: "80%",
-    height: 60,
-    borderWidth: 2,
-    borderColor: "#ccc",
-    borderRadius: 12,
-    fontSize: 18,
+  label: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 16,
+    marginBottom: 5,
+    color: '#255ba0',
+  },
+  inputMainContainer:{
+    width: '100%',
+    height: 'auto',
+    marginVertical: 6
+  },
+  input : {
+    flex : 1,
+    fontFamily: 'Inter-Regular'
+  },
+  inputContainer: {
+    width: '100%',
+    height: 50,
     paddingHorizontal: 16,
-    marginBottom: 20,
-    backgroundColor: "#fff",
+    borderWidth: 2,
+    borderColor: '#a1a2a8',
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  inputContainerFocused: {
+    borderColor: '#3B82F6',
+  },
+  errorText: {
+    fontFamily: 'Inter-Regular',
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 10,
+    fontSize: 14,
   },
   button: {
-    width: "70%",
-    backgroundColor: "#3B82F6",
+    width: "100%",
+    backgroundColor: '#4b90df',
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 14,
-    borderRadius: 30,
-    marginTop: 10,
+    borderRadius: 10,
+    marginTop: 20,
   },
   buttonText: {
-    fontFamily: "Poppins-SemiBold",
+    fontFamily: "Inter-Bold",
     fontSize: 18,
     color: "white",
   },
   resendText: {
+    marginHorizontal: 'auto',
     marginTop: 20,
     fontSize: 16,
-    color: "#2563eb",
-    fontFamily: "Poppins-Medium",
+    color: '#255ba0',
+    fontFamily: "Inter-Medium",
   },
 });
