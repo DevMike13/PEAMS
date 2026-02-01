@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "iFlutter",
-    "slug": "iFlutter",
-    "scheme": "iflutter",
+    "name": "PEAMS",
+    "slug": "peams",
+    "scheme": "peams",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -22,7 +22,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.hymike.iFlutter",
+      "package": "com.peams.app",
       "googleServicesFile" : "./google-services.json"
     },
     "web": {
