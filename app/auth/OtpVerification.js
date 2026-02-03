@@ -15,6 +15,7 @@ const OtpScreen = () => {
   const router = useRouter();
 
   const [otp, setOtp] = useState("");
+   const [isFocusedOtp, setIsFocusedOtp] = useState(false);
   const [loading, setLoading] = useState(false);
   console.log(user?.email);
   const handleVerifyOtp = async () => {
@@ -26,7 +27,7 @@ const OtpScreen = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "https://verifyotp-jhhe3b5kca-as.a.run.app",
+        "https://verifyotp-4rv2m5gheq-as.a.run.app",
         { email: user?.email, otp }
       );
 
@@ -49,7 +50,7 @@ const OtpScreen = () => {
 
   const handleResendOtp = async () => {
     try {
-      await axios.post("https://sendotp-jhhe3b5kca-as.a.run.app", { email: user?.email });
+      await axios.post("https://sendotp-4rv2m5gheq-as.a.run.app", { email: user?.email });
       Alert.alert("OTP Sent", "A new OTP has been sent to your email.");
     } catch (error) {
       console.error("Resend OTP error:", error);
@@ -59,61 +60,58 @@ const OtpScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Image 
-        source={images.backgroundTop}
-        style={styles.bgTop}
-        resizeMode='contain'
-      />
+      <View style={styles.innerContainer}>
+        <View style={styles.header}>
+          <Image source={images.logo} style={styles.imageLogo} resizeMode="contain" />
+          <Text style={styles.headerTitle}>Email Verification</Text>
+        </View>
+        <View style={styles.inputsContainer}>
+          <Text style={styles.subtitle}>
+            Enter the 6-digit OTP sent to {"\n"}
+            <Text style={styles.email}>{user?.email || "..."}</Text>
+          </Text>
 
-      <Image 
-        source={images.logo}
-        style={styles.imageLogo}
-        resizeMode='contain'
-      />
-      <Text style={styles.title}>Email Verification</Text>
-      <Text style={styles.subtitle}>
-        Enter the 6-digit OTP sent to {"\n"}
-        <Text style={styles.email}>{user?.email || "..."}</Text>
-      </Text>
+          <View style={styles.inputMainContainer}>
+            <Text style={styles.label}>Email</Text>
+            <View style={[styles.inputContainer, isFocusedOtp && styles.inputContainerFocused]}>
+              <TextInput
+                placeholder="Enter OTP"
+                keyboardType="numeric"
+                value={otp}
+                onChangeText={setOtp}
+                style={styles.input}
+                onFocus={() => setIsFocusedOtp(true)}
+                onBlur={() => setIsFocusedOtp(false)}
+              />
+            </View>
+          </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Enter OTP"
-        keyboardType="numeric"
-        value={otp}
-        onChangeText={setOtp}
-        maxLength={6}
-      />
-
-      <TouchableOpacity
-        style={[styles.button, loading && { opacity: 0.7 }]}
-        onPress={handleVerifyOtp}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? "Verifying..." : "Verify OTP"}
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={handleResendOtp}>
-        <Text style={styles.resendText}>Resend OTP</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-            style={styles.button}
-            onPress={async () => {
-              await logout();
-              router.replace('/auth/login');
-          }} 
-        >
+          <TouchableOpacity
+            style={[styles.button, loading && { opacity: 0.7 }]}
+            onPress={handleVerifyOtp}
+            disabled={loading}
+          >
             <Text style={styles.buttonText}>
-              Back
+              {loading ? "Verifying..." : "Verify OTP"}
             </Text>
-        </TouchableOpacity>
-        <Image 
-            source={images.backgroundBottom}
-            style={styles.bgBottom}
-            resizeMode='contain'
-        />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={handleResendOtp}>
+            <Text style={styles.resendText}>Resend OTP</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+              style={styles.button}
+              onPress={async () => {
+                await logout();
+                router.replace('/auth/login');
+            }} 
+          >
+              <Text style={styles.buttonText}>
+                Back
+              </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </SafeAreaView>
   );
 };
@@ -129,25 +127,51 @@ const styles = StyleSheet.create({
     backgroundColor: '#eaeaea',
     position: 'relative'
   },
-  bgTop:{
-      position: 'absolute',
-      width: '100%',
-      top: 0
+  
+  innerContainer: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    backgroundColor: 'white',
+    elevation: 5,
+    width: '85%',
+    height: '65%',
+    marginHorizontal: 'auto',
+    marginVertical: 'auto',
+    borderRadius: 30,
   },
-  bgBottom:{
-      position: 'absolute',
-      width: width,
-      bottom: -30,
-      zIndex: -10
+  inputsContainer:{
+    paddingHorizontal: 20
+  },
+  header:{
+    backgroundColor: '#4b90df',
+    height: 70,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    flexDirection: 'row',
+    justifyContent: 'center', 
+    alignItems: 'center',
+    gap: 5
+  },
+  headerTitle:{
+    fontFamily: 'Inter-Bold',
+    fontSize: 24,
+    color: 'white'
   },
   imageLogo: {
-      marginHorizontal: 'auto'
+    width: 50,
+    height: 50,
   },
   title: {
-    fontSize: 24,
-    fontFamily: "Poppins-SemiBold",
-    marginBottom: 10,
+    fontFamily: 'Inter-Bold',
+    fontSize: 32,
+    textAlign: 'center',
+    marginBottom: 16,
+    color: '#255ba0',
+    marginTop: 12
   },
+
   subtitle: {
     fontSize: 16,
     textAlign: "center",
@@ -155,42 +179,67 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-Regular",
     color: "#555",
   },
-  email: {
-    fontFamily: "Poppins-SemiBold",
-    color: "#2563eb",
+  label: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 16,
+    marginBottom: 5,
+    color: '#255ba0',
   },
-  input: {
-    width: "80%",
-    height: 60,
-    borderWidth: 2,
-    borderColor: "#ccc",
-    borderRadius: 12,
-    fontSize: 24,
+  subtitle: {
+    fontSize: 16,
     textAlign: "center",
     marginBottom: 20,
-    backgroundColor: "#fff",
+    marginTop: 20,
+    fontFamily: "Inter-Regular",
+    color: "#555",
   },
-  button:{
-    width: '70%',
-    backgroundColor: '#c6c6c6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 14,
-    borderRadius: 30,
-    marginHorizontal: 'auto',
-    marginTop: 16,
+  label: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 16,
+    marginBottom: 5,
+    color: '#255ba0',
+  },
+  inputMainContainer:{
+    width: '100%',
+    height: 'auto',
+    marginVertical: 6
+  },
+  input : {
+    flex : 1,
+    fontFamily: 'Inter-Regular'
+  },
+  inputContainer: {
+    width: '100%',
+    height: 50,
+    paddingHorizontal: 16,
     borderWidth: 2,
     borderColor: '#a1a2a8',
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  inputContainerFocused: {
+    borderColor: '#3B82F6',
+  },
+  button: {
+    width: "100%",
+    backgroundColor: '#4b90df',
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 14,
+    borderRadius: 10,
+    marginTop: 20,
   },
   buttonText: {
-    fontFamily: 'Poppins-SemiBold',
-    fontSize: 20,
-    color: 'white'
+    fontFamily: "Inter-Bold",
+    fontSize: 18,
+    color: "white",
   },
   resendText: {
+    marginHorizontal: 'auto',
     marginTop: 20,
     fontSize: 16,
-    color: "#2563eb",
-    fontFamily: "Poppins-Medium",
+    color: '#255ba0',
+    fontFamily: "Inter-Medium",
   },
 });

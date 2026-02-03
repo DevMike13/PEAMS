@@ -106,7 +106,7 @@ export default function Layout() {
         router.replace(role === 'admin' ? '/(admin)' : '/(user)');
       } else {
         if (role === 'admin' && !inAdminRoute) router.replace('/(admin)');
-        if (role === 'staff' && !inUserRoute) router.replace('/(user)');
+        if (role === 'user' && !inUserRoute) router.replace('/(user)');
       }
     }
 

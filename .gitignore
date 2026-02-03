@@ -38,3 +38,4 @@ yarn-error.*
 
 firebase.js
 google-services.json
+#"googleServicesFile" : "./google-services.json"

@@ -10,7 +10,7 @@ import { images } from '../../constants';
 import axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
-const roles = ['Admin', 'Staff'];
+const roles = ['Admin', 'User'];
 
 const Register = () => {
   const router = useRouter();
@@ -96,7 +96,7 @@ const Register = () => {
       console.log('User document created successfully in Firestore');
       
       try {
-        await axios.post('https://sendotp-jhhe3b5kca-as.a.run.app', { email });
+        await axios.post('https://sendotp-4rv2m5gheq-as.a.run.app', { email });
       } catch (otpError) {
         console.error('Error sending OTP:', otpError);
         Alert.alert('Error', 'Failed to send OTP. Please try again later.');

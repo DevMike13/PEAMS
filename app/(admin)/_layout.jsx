@@ -121,7 +121,7 @@ export default function AdminTabsLayout() {
           },
           tabBarShowLabel: false,
           headerStyle: {
-            backgroundColor: '#fff',
+            backgroundColor: '#4b90df',
             elevation: 0,
             shadowOpacity: 0,
           },
@@ -131,17 +131,18 @@ export default function AdminTabsLayout() {
             paddingVertical: 20, // helps center vertically
           },
           headerShown: true,
-          headerTitle: '',
-          headerLeft: () => (
+          headerTitle: () => (
             <View style={styles.headerContainer}>
-              <Image 
+              <Image
                 source={images.logo}
                 style={styles.imageLogo}
-                resizeMode='contain'
+                resizeMode="contain"
               />
-              <Text style={styles.appNameText}>iFlutter</Text>
+              <Text style={styles.appNameText}>PEAMS</Text>
             </View>
           ),
+          headerTitleAlign: 'center',
+          headerLeft: () => null,
           headerRight: () => (
             <View>
               <TouchableOpacity
@@ -152,7 +153,7 @@ export default function AdminTabsLayout() {
                 style={styles.notificationButton}
               >
                 <View style={styles.notificationContainer}>
-                  <Ionicons name="notifications-outline" size={26} color="#333" />
+                  <Ionicons name="notifications-outline" size={26} color="#ffffff" />
                   {unreadCount > 0 && (
                     <View style={styles.notificationCountContainer}>
                       <Text style={styles.notificationCountText}>{unreadCount}</Text>
@@ -302,10 +303,10 @@ const styles = StyleSheet.create({
     height: 36,
   },
   appNameText: {
-    fontFamily: 'Poppins-Medium',
+    fontFamily: 'Inter-Black',
     fontSize: 18,
     marginLeft: 6,
-    color: '#333',
+    color: 'white',
   },
   notificationButton: {
     marginRight: 16,

@@ -46,7 +46,7 @@ const Login = () => {
       setUser(firebaseUser, userData.role, userData.isAccepted, userData.isVerified);
 
       if (!userData.isVerified) {
-        await axios.post("https://sendotp-jhhe3b5kca-as.a.run.app", { email: firebaseUser.email });
+        await axios.post("https://sendotp-4rv2m5gheq-as.a.run.app", { email: firebaseUser.email });
         return;
       }
 

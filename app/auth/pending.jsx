@@ -13,39 +13,31 @@ export default function PendingScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Image 
-        source={images.backgroundTop}
-        style={styles.bgTop}
-        resizeMode='contain'
-      />
+      <View style={styles.innerContainer}>
+        <View style={styles.header}>
+          <Image source={images.logo} style={styles.imageLogo} resizeMode="contain" />
+          <Text style={styles.headerTitle}>PEAMS</Text>
+        </View>
+        <View style={styles.inputsContainer}>
+          <Text style={styles.title}>Account Pending Approval</Text>
+          <Text style={styles.message}>
+            Thank you for registering. Your account is awaiting admin approval.
+            You’ll be notified once it’s accepted.
+          </Text>
 
-      <Image 
-        source={images.logo}
-        style={styles.imageLogo}
-        resizeMode='contain'
-      />
-      <Text style={styles.title}>Account Pending Approval</Text>
-      <Text style={styles.message}>
-        Thank you for registering. Your account is awaiting admin approval.
-        You’ll be notified once it’s accepted.
-      </Text>
-
-        <TouchableOpacity
-            style={styles.button}
-            onPress={async () => {
-              await logout();
-              router.replace('/auth/login');
-          }} 
-        >
-            <Text style={styles.buttonText}>
-              Back
-            </Text>
-        </TouchableOpacity>
-        <Image 
-            source={images.backgroundBottom}
-            style={styles.bgBottom}
-            resizeMode='contain'
-        />
+          <TouchableOpacity
+              style={styles.button}
+              onPress={async () => {
+                await logout();
+                router.replace('/auth/login');
+            }} 
+          >
+              <Text style={styles.buttonText}>
+                Back
+              </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -53,31 +45,56 @@ export default function PendingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#eaeaea',
     position: 'relative'
   },
-  bgTop:{
-      position: 'absolute',
-      width: '100%',
-      top: 0
+  innerContainer: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    backgroundColor: 'white',
+    elevation: 5,
+    width: '85%',
+    height: '60%',
+    marginHorizontal: 'auto',
+    marginVertical: 'auto',
+    borderRadius: 30,
   },
-  bgBottom:{
-      position: 'absolute',
-      width: width,
-      bottom: -30,
-      zIndex: -10
+  inputsContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header:{
+    backgroundColor: '#4b90df',
+    height: 70,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    flexDirection: 'row',
+    justifyContent: 'center', 
+    alignItems: 'center',
+    gap: 5
+  },
+  headerTitle:{
+    fontFamily: 'Inter-Bold',
+    fontSize: 24,
+    color: 'white'
   },
   imageLogo: {
-      marginHorizontal: 'auto'
+    width: 50,
+    height: 50,
   },
   title: {
-    fontSize: 22,
-    fontFamily: 'Poppins-Bold',
-    marginBottom: 10,
+    fontFamily: 'Inter-Bold',
+    fontSize: 32,
     textAlign: 'center',
+    marginBottom: 16,
+    color: '#255ba0',
+    marginTop: 12
   },
   message: {
     fontFamily: 'Poppins-Medium',
@@ -86,21 +103,18 @@ const styles = StyleSheet.create({
     color: '#555',
     marginBottom: 30,
   },
-  button:{
-    width: '70%',
-    backgroundColor: '#c6c6c6',
-    justifyContent: 'center',
-    alignItems: 'center',
+  button: {
+    width: "100%",
+    backgroundColor: '#4b90df',
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: 14,
-    borderRadius: 30,
-    marginHorizontal: 'auto',
-    marginTop: 16,
-    borderWidth: 2,
-    borderColor: '#a1a2a8',
+    borderRadius: 10,
+    marginTop: 20,
   },
   buttonText: {
-    fontFamily: 'Poppins-SemiBold',
-    fontSize: 20,
-    color: 'white'
+    fontFamily: "Inter-Bold",
+    fontSize: 18,
+    color: "white",
   },
 });

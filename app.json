@@ -22,8 +22,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.peams.app",
-      "googleServicesFile" : "./google-services.json"
+      "package": "com.peams.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
