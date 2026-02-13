@@ -13,6 +13,9 @@ import manualControls from "../assets/images/manual_controls.png";
 import thresholds from "../assets/images/thrshold.png";
 import accounts from "../assets/images/accounts.png";
 
+// ANIMATION
+import rooster from "../assets/animations/Rooster.json";
+
 export default { 
     logo, 
     backgroundTop, 
@@ -27,5 +30,6 @@ export default {
     sensorReadings, 
     manualControls,
     thresholds,
-    accounts
+    accounts,
+    rooster
 };

@@ -258,6 +258,7 @@ const HomeScreen = () => {
                 onValueChange={toggleHeater}
                 value={isEnabledHeater}
                 style={styles.switch}
+                disabled
               />
               <Text style={[
                   styles.switchText,
@@ -285,6 +286,7 @@ const HomeScreen = () => {
                 onValueChange={toggleFan}
                 value={isEnabledFan}
                 style={styles.switch}
+                disabled
               />
               <Text style={[
                   styles.switchText,

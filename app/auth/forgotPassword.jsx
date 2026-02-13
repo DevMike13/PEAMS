@@ -5,6 +5,7 @@ import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { images } from "../../constants";
 import { auth } from "../../firebase";
+import LottieView from 'lottie-react-native';
 
 const { width } = Dimensions.get("window");
 
@@ -46,7 +47,13 @@ const ForgotPassword = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.innerContainer}>
         <View style={styles.header}>
-          <Image source={images.logo} style={styles.imageLogo} resizeMode="contain" />
+          {/* <Image source={images.logo} style={styles.imageLogo} resizeMode="contain" /> */}
+          <LottieView
+            source={images.rooster}
+            autoPlay
+            loop
+            style={{ width: 80, height: 80 }}
+          />
           <Text style={styles.headerTitle}>Forgot Password</Text>
         </View>
         <View style={styles.inputsContainer}>
@@ -123,7 +130,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center', 
     alignItems: 'center',
-    gap: 5
+    gap: 0
   },
   headerTitle:{
     fontFamily: 'Inter-Bold',

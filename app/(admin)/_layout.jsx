@@ -12,6 +12,7 @@ import { firestoreDB } from '../../firebase';
 import { Text, View, StyleSheet, Image, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { images } from '../../constants';
+import LottieView from 'lottie-react-native';
 
 export default function AdminTabsLayout() {
   const [notifications, setNotifications] = useState([]);
@@ -133,10 +134,16 @@ export default function AdminTabsLayout() {
           headerShown: true,
           headerTitle: () => (
             <View style={styles.headerContainer}>
-              <Image
+              {/* <Image
                 source={images.logo}
                 style={styles.imageLogo}
                 resizeMode="contain"
+              /> */}
+              <LottieView
+                source={images.rooster}
+                autoPlay
+                loop
+                style={{ width: 60, height: 60 }}
               />
               <Text style={styles.appNameText}>PEAMS</Text>
             </View>
@@ -179,24 +186,24 @@ export default function AdminTabsLayout() {
           }}
         />
         <Tabs.Screen
-          name="(tabs)/data"
+          name="(tabs)/controls"
           options={{
             tabBarIcon: ({ focused }) => (
               <Ionicons
-                name={focused ? 'analytics' : 'analytics-outline'}
-                size={30}
+                name={focused ? 'hand-left' : 'hand-left-outline'}
+                size={26}
                 color={focused ? '#007AFF' : '#999'}
               />
             ),
           }}
         />
         <Tabs.Screen
-          name="(tabs)/threshold"
+          name="(tabs)/data"
           options={{
             tabBarIcon: ({ focused }) => (
               <Ionicons
-                name={focused ? 'radio' : 'radio-outline'}
-                size={26}
+                name={focused ? 'analytics' : 'analytics-outline'}
+                size={30}
                 color={focused ? '#007AFF' : '#999'}
               />
             ),
@@ -305,7 +312,7 @@ const styles = StyleSheet.create({
   appNameText: {
     fontFamily: 'Inter-Black',
     fontSize: 18,
-    marginLeft: 6,
+    marginLeft: 0,
     color: 'white',
   },
   notificationButton: {

@@ -118,7 +118,7 @@ export default function AccountListScreen() {
   
 
   const handleDelete = async (account) => {
-    if (account.email === "ifluttercapstone@gmail.com") return;
+    if (account.email === "peams123@gmail.com") return;
     console.log(account);
     Alert.alert(
       "Delete Account",
@@ -131,7 +131,7 @@ export default function AccountListScreen() {
           onPress: async () => {
             try {
               // Step 2: Call your Cloud Function endpoint
-              const response = await fetch("https://deleteuseraccount-jhhe3b5kca-as.a.run.app", {
+              const response = await fetch("https://deleteuseraccount-4rv2m5gheq-as.a.run.app", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ uid: account.id }),
@@ -218,7 +218,7 @@ export default function AccountListScreen() {
             />
           </TouchableOpacity>
         )}
-        {account.email !== "ifluttercapstone@gmail.com" && (
+        {account.email !== "peams123@gmail.com" && (
           <TouchableOpacity
             onPress={() => handleDelete(account)}
             style={styles.iconButton}
@@ -231,7 +231,7 @@ export default function AccountListScreen() {
   );
 
   const admins = accounts.filter((a) => a.role === "admin");
-  const staff = accounts.filter((a) => a.role === "staff");
+  const user = accounts.filter((a) => a.role === "user");
 
   return (
     <View style={styles.container}>
@@ -254,11 +254,11 @@ export default function AccountListScreen() {
 
           <View style={styles.divider} />
 
-          <Text style={styles.sectionHeader}>Staff</Text>
-          {staff.length === 0 ? (
-            <Text style={styles.emptyText}>No staff accounts</Text>
+          <Text style={styles.sectionHeader}>Users</Text>
+          {user.length === 0 ? (
+            <Text style={styles.emptyText}>No user accounts</Text>
           ) : (
-            staff.map(renderAccount)
+            user.map(renderAccount)
           )}
 
           {loadingMore && (

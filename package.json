@@ -26,6 +26,7 @@
     "expo-splash-screen": "~0.30.10",
     "expo-status-bar": "~2.2.3",
     "firebase": "^12.0.0",
+    "lottie-react-native": "7.2.2",
     "moment": "^2.30.1",
     "react": "19.0.0",
     "react-native": "0.79.5",
@@ -33,6 +34,7 @@
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-svg": "15.11.2",
+    "toastify-react-native": "^7.2.3",
     "zustand": "^5.0.7"
   },
   "devDependencies": {

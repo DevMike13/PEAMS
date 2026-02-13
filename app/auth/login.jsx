@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { images } from '../../constants';
 import { useAuthStore } from '../../store/useAuthStore';
 import axios from "axios";
+import LottieView from 'lottie-react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -76,17 +77,24 @@ const Login = () => {
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
       >
         <View style={styles.innerContainer}>
           <View style={styles.header}>
-            <Image source={images.logo} style={styles.imageLogo} resizeMode="contain" />
+            {/* <Image source={images.logo} style={styles.imageLogo} resizeMode="contain" /> */}
+            <LottieView
+             source={images.rooster}
+              autoPlay
+              loop
+              style={{ width: 80, height: 80 }}
+            />
             <Text style={styles.headerTitle}>PEAMS</Text>
           </View>
-          {/* <ScrollView
+          <ScrollView
             contentContainerStyle={styles.scrollContainer}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
-          > */}
+          >
           <View style={styles.inputsContainer}>
             <Text style={styles.title}>Login</Text>
 
@@ -148,7 +156,7 @@ const Login = () => {
               </TouchableOpacity>
             </View>
           </View>
-          {/* </ScrollView> */}
+          </ScrollView>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -164,7 +172,7 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 24,
+    // padding: 24,
     paddingBottom: 80,
   },
   innerContainer: {
@@ -191,7 +199,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center', 
     alignItems: 'center',
-    gap: 5
+    gap: 0
   },
   headerTitle:{
     fontFamily: 'Inter-Bold',

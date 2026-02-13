@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../store/useAuthStore';
 import { images } from '../../constants';
-
+import LottieView from 'lottie-react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -15,7 +15,13 @@ export default function PendingScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.innerContainer}>
         <View style={styles.header}>
-          <Image source={images.logo} style={styles.imageLogo} resizeMode="contain" />
+          {/* <Image source={images.logo} style={styles.imageLogo} resizeMode="contain" /> */}
+          <LottieView
+            source={images.rooster}
+            autoPlay
+            loop
+            style={{ width: 80, height: 80 }}
+          />
           <Text style={styles.headerTitle}>PEAMS</Text>
         </View>
         <View style={styles.inputsContainer}>
@@ -77,7 +83,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center', 
     alignItems: 'center',
-    gap: 5
+    gap: 0
   },
   headerTitle:{
     fontFamily: 'Inter-Bold',

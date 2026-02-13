@@ -7,6 +7,7 @@ import { doc, updateDoc } from "firebase/firestore";
 import { useAuthStore } from "../../store/useAuthStore";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { images } from '../../constants';
+import LottieView from 'lottie-react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -62,7 +63,13 @@ const OtpScreen = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.innerContainer}>
         <View style={styles.header}>
-          <Image source={images.logo} style={styles.imageLogo} resizeMode="contain" />
+          {/* <Image source={images.logo} style={styles.imageLogo} resizeMode="contain" /> */}
+          <LottieView
+            source={images.rooster}
+            autoPlay
+            loop
+            style={{ width: 50, height: 50 }}
+          />
           <Text style={styles.headerTitle}>Email Verification</Text>
         </View>
         <View style={styles.inputsContainer}>
@@ -152,11 +159,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center', 
     alignItems: 'center',
-    gap: 5
+    gap: 0
   },
   headerTitle:{
     fontFamily: 'Inter-Bold',
-    fontSize: 24,
+    fontSize: 20,
     color: 'white'
   },
   imageLogo: {
