@@ -198,6 +198,18 @@ export default function AdminTabsLayout() {
           }}
         />
         <Tabs.Screen
+          name="(tabs)/input"
+          options={{
+            tabBarIcon: ({ focused }) => (
+              <Ionicons
+                name={focused ? 'file-tray-full' : 'file-tray-full-outline'}
+                size={26}
+                color={focused ? '#007AFF' : '#999'}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="(tabs)/data"
           options={{
             tabBarIcon: ({ focused }) => (
@@ -226,30 +238,7 @@ export default function AdminTabsLayout() {
             ),
           }}
         />
-        <Tabs.Screen
-          name="(tabs)/input"
-          options={{
-            tabBarIcon: ({ focused }) => (
-              <Ionicons
-                name={focused ? 'file-tray-full' : 'file-tray-full-outline'}
-                size={26}
-                color={focused ? '#007AFF' : '#999'}
-              />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="(tabs)/about"
-          options={{
-            tabBarIcon: ({ focused }) => (
-              <Ionicons
-                name={focused ? 'book' : 'book-outline'}
-                size={26}
-                color={focused ? '#007AFF' : '#999'}
-              />
-            ),
-          }}
-        />
+      
         <Tabs.Screen
           name="(tabs)/menu"
           options={{
