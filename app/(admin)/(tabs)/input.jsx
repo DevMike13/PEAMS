@@ -17,6 +17,7 @@ import { firestoreDB, realtimeDB } from "../../../firebase";
 import { getDatabase, ref, set } from "firebase/database";
 import { collection, addDoc, Timestamp, query, where, getDocs, orderBy, updateDoc, onSnapshot } from "firebase/firestore";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import moment from "moment";
 import ToastManager, { Toast } from 'toastify-react-native';
 
@@ -33,6 +34,12 @@ export default function DailyReport() {
   const [notes, setNotes] = useState("");
 
   const [currentCycle, setCurrentCycle] = useState(null);
+
+  const [mortalityVisible, setMortalityVisible] = useState(false);
+  const [mortalityCount, setMortalityCount] = useState("");
+  const [mortalityDate, setMortalityDate] = useState(new Date());
+  const [showMortalityDatePicker, setShowMortalityDatePicker] = useState(false);
+  const [mortalityRecords, setMortalityRecords] = useState([]);
   
   const getAgeStage = (age) => {
     if (age >= 1 && age <= 10) return "1-10";
@@ -122,6 +129,37 @@ export default function DailyReport() {
     }
   };
 
+  const addMortalityRecord = async () => {
+    try {
+      if (!mortalityCount || Number(mortalityCount) <= 0) {
+        Toast.error("Enter a valid mortality number");
+        return;
+      }
+      if (!currentCycle) {
+        Toast.error("No running cycle found");
+        return;
+      }
+
+      await addDoc(collection(firestoreDB, "cycleMortality"), {
+        cycleId: currentCycle.id,
+        count: Number(mortalityCount),
+        ageStage: currentCycle.ageStage,
+        date: Timestamp.fromDate(mortalityDate),
+        createdAt: Timestamp.now(),
+      });
+
+      // Reset inputs
+      setMortalityCount("");
+      setMortalityDate(new Date());
+      setMortalityVisible(false);
+
+      Toast.success("Mortality recorded");
+    } catch (error) {
+      console.log(error);
+      Toast.error("Error adding mortality");
+    }
+  };
+
   useEffect(() => {
     setLoading(true);
 
@@ -174,6 +212,29 @@ export default function DailyReport() {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!currentCycle) {
+      setMortalityRecords([]);
+      return;
+    }
+
+    const q = query(
+      collection(firestoreDB, "cycleMortality"),
+      where("cycleId", "==", currentCycle.id),
+      orderBy("date", "asc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const records = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setMortalityRecords(records);
+    });
+
+    return () => unsubscribe();
+  }, [currentCycle]);
+
   const renderCycleItem = ({ item }) => {
     const isRunning = item.status === "running";
     return (
@@ -183,62 +244,154 @@ export default function DailyReport() {
           isRunning && {
             backgroundColor: "#d1e7ff",
             borderColor: "#007AFF",
-            borderWidth: 1,
           },
         ]}
       >
+        <Text style={styles.listText}>{item.cycleNo}</Text>
         <Text style={styles.listText}>
           {moment(item.startDate.toDate ? item.startDate.toDate() : item.startDate).format("DD MMM YYYY")}
         </Text>
         <Text style={styles.listText}>{item.ageStage}</Text>
-        <Text style={[styles.listText, { paddingVertical: 2, backgroundColor: "green", color: 'white', borderRadius: 10 }]}>{item.status}</Text>
+        <Text style={[styles.listText, { paddingVertical: 2, backgroundColor: item.status === "completed" ? "gray" : "green", color: 'white', borderRadius: 10 }]}>{item.status}</Text>
         <Text style={styles.listText}>{item.chickenQty}</Text>
       </View>
     );
   };
 
-  const renderListHeader = () => (
-    <>
-      {currentCycle && (
+  const renderListHeader = () => {
+    if (!currentCycle) return null;
+
+    // Filter mortality for the current cycle
+    const currentCycleMortality = mortalityRecords.filter(
+      (m) => m.cycleId === currentCycle.id
+    );
+
+    // Compute totals per ageStage
+    const mortalitySummary = currentCycleMortality.reduce((acc, record) => {
+      const stage = record.ageStage;
+      if (!acc[stage]) acc[stage] = 0;
+      acc[stage] += record.count;
+      return acc;
+    }, {});
+
+    return (
+      <>
+        {/* Current Cycle Card */}
         <View style={styles.innerContainer}>
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Current Cycle Info</Text>
           </View>
           <View style={styles.content}>
-            <Text>Cycle No: {currentCycle.cycleNo}</Text>
-            <Text>Start Date: {moment(currentCycle.startDate.toDate ? currentCycle.startDate.toDate() : currentCycle.startDate).format("DD MMM YYYY")}</Text>
-            <Text>Current Day: {currentCycle.currentAge}</Text>
-            <Text>Age Stage: {currentCycle.ageStage}</Text>
-            <Text>Quantity: {currentCycle.chickenQty}</Text>
-            <Text style={{ color: "green", fontWeight: "bold" }}>Status: {currentCycle.status}</Text>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 5 }}>
+              <View style={{ flexDirection: "row", justifyContent: "center", alignItems: 'center', gap: 5 }}>
+                <Text style={{ fontFamily: 'Inter-Medium-Italic' }}>Cycle No: </Text>
+                <Text style={{ fontFamily: 'Inter-Bold', fontSize: 16, backgroundColor: 'green', paddingHorizontal: 10, borderRadius: 5, color: 'white' }}>{currentCycle.cycleNo}</Text>
+              </View>
+              <Text style={{ fontFamily: 'Inter-Medium-Italic' }}>
+                Start Date: <Text style={{ fontFamily: 'Inter-Bold', fontSize: 16}}>{moment(currentCycle.startDate.toDate ? currentCycle.startDate.toDate() : currentCycle.startDate).format("DD MMM YYYY")}</Text>
+              </Text>
+            </View>
+
+            <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 5 }}>
+              <Text style={{ fontFamily: 'Inter-Medium-Italic', marginTop: 10 }}>
+                Current Day: 
+                <Text style={{ fontFamily: 'Inter-Bold', fontSize: 18 }}> {currentCycle.currentAge} </Text>
+                <Ionicons name="partly-sunny-outline" size={18} color="orange" />
+              </Text>
+
+              <Text style={{ fontFamily: 'Inter-Medium-Italic', marginTop: 6 }}>
+                Age Stage: 
+                <Text style={{ fontFamily: 'Inter-Bold', fontSize: 18 }}> {currentCycle.ageStage}</Text>
+              </Text>
+            </View>
+
+            <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 5 }}>
+              <Text style={{ fontFamily: 'Inter-Medium-Italic', marginTop: 6 }}>
+                Quantity: 
+                <Text style={{ fontFamily: 'Inter-Bold', fontSize: 18 }}> {currentCycle.chickenQty}</Text>
+              </Text>
+              
+              <Text style={{ fontFamily: 'Inter-Medium-Italic', marginTop: 6 }}>
+                Status: 
+                <Text style={{ fontFamily: 'Inter-Bold', fontSize: 18, color: 'green' }}>
+                  {" " + currentCycle.status.charAt(0).toUpperCase() + currentCycle.status.slice(1)}
+                </Text>
+              </Text>
+            </View>
+
+            <View style={styles.divider}></View>
+            {/* Mortality Summary */}
+            <View>
+              <Text style={{ fontFamily: 'Inter-Bold', textAlign: 'center', marginBottom: 5 }}>Total Mortality by Age Stage</Text>
+              <View style={{ flexDirection: "row", backgroundColor: "#f0f0f0", borderWidth: 1, borderTopStartRadius: 10, borderTopRightRadius: 10, borderStyle: 'dashed', paddingVertical: 6 }}>
+                <Text style={{ flex: 1, fontFamily: 'Inter-Bold-Italic', textAlign: "center", fontSize: 12 }}>Age Stage</Text>
+                <Text style={{ flex: 1, fontFamily: 'Inter-Bold-Italic', textAlign: "center", fontSize: 12 }}>Total Mortality</Text>
+              </View>
+              {Object.keys(mortalitySummary).length > 0 ? (
+                Object.entries(mortalitySummary).map(([stage, total]) => (
+                  <View key={stage} style={{ flexDirection: "row", borderWidth: 1, borderBottomStartRadius: 10, borderBottomRightRadius: 10, borderStyle: 'dashed', paddingVertical: 3 }}>
+                    <Text style={{ flex: 1, textAlign: "center", fontFamily: 'Inter-Regular' }}>{stage}</Text>
+                    <Text style={{ flex: 1, textAlign: "center", fontFamily: 'Inter-Regular' }}>{total} birds</Text>
+                  </View>
+                ))
+              ) : (
+                <View style={{ width: '100%', paddingVertical: 10, marginTop: 5, borderWidth: 1, borderRadius: 10, borderStyle: 'dashed' }}>
+                  <Text style={{ textAlign: 'center', fontFamily: 'Inter-Italic' }}>No Mortality in Current Cycle</Text>
+                </View>
+              )}
+            </View>
+
           </View>
         </View>
-      )}
-      <View style={[styles.listRow, { borderBottomWidth: 1, borderBottomColor: "#ccc" }]}>
-        <Text style={[styles.listText, { fontFamily: "Inter-Bold" }]}>Start Date</Text>
-        <Text style={[styles.listText, { fontFamily: "Inter-Bold" }]}>Age</Text>
-        <Text style={[styles.listText, { fontFamily: "Inter-Bold" }]}>Status</Text>
-        <Text style={[styles.listText, { fontFamily: "Inter-Bold" }]}>Qty</Text>
-      </View>
-    </>
-  );
+        
+        {/* Table Column Headers */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 20, marginBottom: 10 }}>
+          <Text style={{ fontFamily: 'Inter-Bold-Italic', marginRight: 10 }}>Cycle List</Text>
+          <View style={{ flex: 1, height: 1, backgroundColor: '#000' }} />
+        </View>
+        
+        <View style={[styles.listRowHeader, { backgroundColor: "#f0f0f0", borderWidth: 1, borderTopStartRadius: 10, borderTopRightRadius: 10, borderStyle: 'dashed' }]}>
+          <Text style={[styles.listText, { fontFamily: 'Inter-Bold-Italic' }]}>Cycle No.</Text>
+          <Text style={[styles.listText, { fontFamily: 'Inter-Bold-Italic' }]}>Start Date</Text>
+          <Text style={[styles.listText, { fontFamily: 'Inter-Bold-Italic' }]}>Age</Text>
+          <Text style={[styles.listText, { fontFamily: 'Inter-Bold-Italic' }]}>Status</Text>
+          <Text style={[styles.listText, { fontFamily: 'Inter-Bold-Italic' }]}>Qty</Text>
+        </View>
+      </>
+    );
+  };
+
 
   return (
     <View style={{ flex: 1, padding: 20 }}>
-      
-        <TouchableOpacity
-          style={styles.newEntryBtn}
-          onPress={() => setVisible(true)}
-        >
-          <Ionicons name="add-circle-outline" size={24} color="#fff" />
-          <Text style={styles.newEntryText}>Create New Cycle</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 5 }}>
+          <TouchableOpacity
+            style={[styles.newEntryBtn, { flex: 1}]}
+            onPress={() => setVisible(true)}
+          >
+            <Ionicons name="add-circle-outline" size={24} color="#fff" />
+            <Text style={styles.newEntryText}>Create New Cycle</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.newEntryBtn, { flex: 1, backgroundColor: "#ff6347"}]}
+            onPress={() => setMortalityVisible(true)}
+          >
+            <Ionicons name="heart-dislike-outline" size={24} color="#fff" />
+            <Text style={styles.newEntryText}>Add Mortality</Text>
+          </TouchableOpacity>
+        </View>
 
         <FlatList
           data={cycles}
           keyExtractor={(item) => item.id}
           renderItem={renderCycleItem}
           ListHeaderComponent={renderListHeader}
+          ListEmptyComponent={() => (
+            <View style={{ padding: 20, alignItems: 'center', borderWidth: 1, borderStyle: 'dashed', borderRadius: 10 }}>
+              <Text style={{ fontSize: 14, color: '#666', fontFamily: 'Inter-Italic' }}>No cycles available</Text>
+            </View>
+          )}
           contentContainerStyle={{ paddingBottom: 150 }}
         />
 
@@ -338,6 +491,59 @@ export default function DailyReport() {
             </View>
           </View>
         </Modal>
+        
+        {/* MORTALITY MODAL */}
+        <Modal visible={mortalityVisible} transparent animationType="slide">
+          <View style={styles.overlay}>
+            <View style={styles.modalBox}>
+              <Text style={styles.title}>Add Mortality</Text>
+
+              <Text style={styles.label}>Mortality Count</Text>
+              <TextInput
+                style={styles.dateBox}
+                keyboardType="numeric"
+                placeholder="Enter number of birds"
+                value={mortalityCount}
+                onChangeText={setMortalityCount}
+              />
+
+              <Text style={styles.label}>Date</Text>
+              <TouchableOpacity
+                style={styles.dateBox}
+                onPress={() => setShowMortalityDatePicker(true)}
+              >
+                <Text style={styles.dateText}>
+                  {moment(mortalityDate).format("MMMM DD, YYYY")}
+                </Text>
+              </TouchableOpacity>
+
+              {showMortalityDatePicker && (
+                <DateTimePicker
+                  value={mortalityDate}
+                  mode="date"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    setShowMortalityDatePicker(false);
+                    if (selectedDate) setMortalityDate(selectedDate);
+                  }}
+                />
+              )}
+
+              <View style={styles.row}>
+                <TouchableOpacity
+                  style={styles.cancelBtn}
+                  onPress={() => setMortalityVisible(false)}
+                >
+                  <Text style={styles.btnText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.saveBtn} onPress={addMortalityRecord}>
+                  <Text style={styles.btnTextWhite}>Save</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
 
         <ToastManager
           theme='light'
@@ -363,7 +569,7 @@ const styles = StyleSheet.create({
   },
   newEntryText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 12,
     fontFamily: "Inter-Medium",
     marginLeft: 8,
   },
@@ -483,12 +689,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     paddingVertical: 8,
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#ddd",
+    borderWidth: 1, 
+    borderBottomStartRadius: 10, 
+    borderBottomRightRadius: 10, 
+    borderStyle: 'dashed'
+  },
+  listRowData:{
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+  },
+  listRowHeader:{
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 8
   },
   listText: {
     flex: 1,
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: "Inter-Regular",
     textAlign: "center",
     textTransform: 'capitalize',
@@ -510,7 +728,7 @@ const styles = StyleSheet.create({
   },
   header:{
     backgroundColor: '#4b90df',
-    height: 70,
+    height: 50,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     flexDirection: 'row',
@@ -520,7 +738,7 @@ const styles = StyleSheet.create({
   },
   headerTitle:{
     fontFamily: 'Inter-Bold',
-    fontSize: 24,
+    fontSize: 18,
     color: 'white'
   },
 
@@ -528,5 +746,12 @@ const styles = StyleSheet.create({
   content:{
     paddingHorizontal: 20,
     paddingVertical: 10
+  },
+  divider:{
+    width: '100%',
+    height: 1,
+    backgroundColor: '#000',
+    marginHorizontal: 'auto',
+    marginVertical: 12
   },
 });
