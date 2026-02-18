@@ -222,7 +222,7 @@ export default function AdminTabsLayout() {
           }}
         />
         <Tabs.Screen
-          name="(tabs)/butterfly"
+          name="(tabs)/accounts"
           options={{
             tabBarIcon: ({ focused }) => (
               // <MaterialCommunityIcons
