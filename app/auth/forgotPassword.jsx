@@ -176,7 +176,8 @@ const styles = StyleSheet.create({
   },
   input : {
     flex : 1,
-    fontFamily: 'Inter-Regular'
+    fontFamily: 'Inter-Regular',
+    color: '#000',
   },
   inputContainer: {
     width: '100%',
