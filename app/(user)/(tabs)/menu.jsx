@@ -53,7 +53,7 @@ export default function MenuScreen() {
   };
 
   const handleContact = () => {
-    Linking.openURL('mailto:ifluttercapstone@gmail.com?subject=Support Request');
+    Linking.openURL('mailto:peams123@gmail.com?subject=Support Request');
   };
 
   const handleSettings = () => {

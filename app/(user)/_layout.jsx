@@ -9,111 +9,150 @@ import {
   doc 
 } from 'firebase/firestore';
 import { firestoreDB } from '../../firebase';
-import { Text, View, StyleSheet, Image, TouchableOpacity, FlatList, ScrollView, TouchableWithoutFeedback  } from 'react-native';
+import { useAuthStore } from '../../store/useAuthStore';
+import { Text, View, StyleSheet, Image, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { images } from '../../constants';
+import LottieView from 'lottie-react-native';
 
 export default function AdminTabsLayout() {
   const [notifications, setNotifications] = useState([]);
+  const [userStatus, setUserStatus] = useState({});
   const [showDropdown, setShowDropdown] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  const { user } = useAuthStore();
 
   useEffect(() => {
     const q = query(
       collection(firestoreDB, 'notifications'),
       orderBy('date', 'desc')
     );
-  
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const notifList = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }));
-  
+
       setNotifications(notifList);
-  
-      const unread = notifList.filter(n => !n.isViewed).length;
-      setUnreadCount(unread);
     });
-  
+
     return () => unsubscribe();
   }, []);
 
+  /* ===============================
+     LISTEN TO USER READ STATUS
+  =============================== */
+  useEffect(() => {
+    if (!user) return;
+
+    const statusRef = collection(
+      firestoreDB,
+      'users',
+      user.uid,
+      'notificationStatus'
+    );
+
+    const unsubscribe = onSnapshot(statusRef, (snapshot) => {
+      const statusMap = {};
+      snapshot.docs.forEach(doc => {
+        statusMap[doc.id] = doc.data();
+      });
+
+      setUserStatus(statusMap);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  /* ===============================
+     COMPUTE UNREAD COUNT
+  =============================== */
+  useEffect(() => {
+    const unread = notifications.filter(
+      n => !userStatus[n.id]?.isViewed
+    ).length;
+
+    setUnreadCount(unread);
+  }, [notifications, userStatus]);
+
+  /* ===============================
+     MARK AS VIEWED (PER USER)
+  =============================== */
   const markNotificationsAsViewed = async () => {
+    if (!user) return;
+
     const batch = writeBatch(firestoreDB);
-  
+
     notifications.forEach(n => {
-      if (!n.isViewed) {
-        const notifRef = doc(firestoreDB, 'notifications', n.id);
-        batch.update(notifRef, { isViewed: true });
+      if (!userStatus[n.id]?.isViewed) {
+        const statusRef = doc(
+          firestoreDB,
+          'users',
+          user.uid,
+          'notificationStatus',
+          n.id
+        );
+
+        batch.set(statusRef, { isViewed: true });
       }
     });
-  
+
     await batch.commit();
   };
 
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
+
     const dateObj = timestamp.toDate();
-    return (
-      dateObj.toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      }) +
-      ' ' +
-      dateObj.toLocaleTimeString(undefined, {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      })
-    );
+
+    const formattedDate = dateObj.toLocaleDateString('en-US', {
+      month: 'short',
+      day: '2-digit',
+      year: 'numeric',
+    });
+
+    const formattedTime = dateObj.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }).replace(' ', '');
+
+    return `${formattedDate} - ${formattedTime}`;
   };
 
   // const NotificationDropdown = () => {
   //   if (!showDropdown) return null;
-  
-  //   const handleNotificationPress = (item) => {
-  //     console.log('Notification pressed:', item);
-  //   };
-  
   //   return (
-  //     <TouchableWithoutFeedback>
-  //       <View style={styles.dropdown}>
-  //         <Text style={styles.dropdownHeaderText}>Notifications</Text>
-  
+  //     <View style={styles.dropdown}>
+  //       <Text style={styles.dropdownHeaderText}>Notifications</Text>
+  //       <View style={{ maxHeight: 240 }}> 
   //         {notifications.length > 0 ? (
-  //           <ScrollView
-  //             style={{ flex: 1 }}
-  //             contentContainerStyle={{ paddingBottom: 10 }}
-  //             showsVerticalScrollIndicator={true}
-  //           >
-  //             {notifications.map((item) => (
-  //               <TouchableOpacity
-  //                 key={item.id}
-  //                 style={styles.dropdownItem}
-  //                 onPress={() => handleNotificationPress(item)}
-  //               >
+  //           <FlatList
+  //             data={notifications}
+  //             keyExtractor={(item) => item.id}
+  //             renderItem={({ item }) => (
+  //               <View style={styles.dropdownItem}>
   //                 <Text
   //                   style={[
   //                     styles.dropdownText,
   //                     !item.isViewed && styles.unreadText,
   //                   ]}
   //                 >
-  //                   {String(item.content)}
+  //                   {item.content}
   //                 </Text>
   //                 <Text style={styles.dateText}>{formatDate(item.date)}</Text>
-  //               </TouchableOpacity>
-  //             ))}
-  //           </ScrollView>
+  //               </View>
+  //             )}
+  //           />
   //         ) : (
   //           <Text style={styles.dropdownText}>No notifications</Text>
   //         )}
   //       </View>
-  //     </TouchableWithoutFeedback>
+  //     </View>
   //   );
   // };
-  
 
   return (
     <View style={{ flex: 1 }}>
@@ -134,7 +173,7 @@ export default function AdminTabsLayout() {
           },
           tabBarShowLabel: false,
           headerStyle: {
-            backgroundColor: '#fff',
+            backgroundColor: '#4b90df',
             elevation: 0,
             shadowOpacity: 0,
           },
@@ -144,28 +183,39 @@ export default function AdminTabsLayout() {
             paddingVertical: 20, // helps center vertically
           },
           headerShown: true,
-          headerTitle: '',
-          headerLeft: () => (
+          headerTitle: () => (
             <View style={styles.headerContainer}>
-              <Image 
+              {/* <Image
                 source={images.logo}
                 style={styles.imageLogo}
-                resizeMode='contain'
+                resizeMode="contain"
+              /> */}
+              <LottieView
+                source={images.rooster}
+                autoPlay
+                loop
+                style={{ width: 60, height: 60 }}
               />
-              <Text style={styles.appNameText}>iFlutter</Text>
+              <Text style={styles.appNameText}>PEAMS</Text>
             </View>
           ),
+          headerTitleAlign: 'center',
+          headerLeft: () => null,
           headerRight: () => (
-            <View style={{ zIndex: 9999 }}>
+            <View>
               <TouchableOpacity
-                onPress={() => {
-                  setShowDropdown(!showDropdown);
-                  if (!showDropdown) markNotificationsAsViewed();
+                onPress={async () => {
+                  const opening = !showDropdown;
+                  setShowDropdown(opening);
+
+                  if (opening) {
+                    await markNotificationsAsViewed();
+                  }
                 }}
                 style={styles.notificationButton}
               >
                 <View style={styles.notificationContainer}>
-                  <Ionicons name="notifications-outline" size={26} color="#333" />
+                  <Ionicons name="notifications-outline" size={26} color="#ffffff" />
                   {unreadCount > 0 && (
                     <View style={styles.notificationCountContainer}>
                       <Text style={styles.notificationCountText}>{unreadCount}</Text>
@@ -191,23 +241,11 @@ export default function AdminTabsLayout() {
           }}
         />
         <Tabs.Screen
-          name="(tabs)/data"
+          name="(tabs)/controls"
           options={{
             tabBarIcon: ({ focused }) => (
               <Ionicons
-                name={focused ? 'analytics' : 'analytics-outline'}
-                size={30}
-                color={focused ? '#007AFF' : '#999'}
-              />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="(tabs)/threshold"
-          options={{
-            tabBarIcon: ({ focused }) => (
-              <Ionicons
-                name={focused ? 'radio' : 'radio-outline'}
+                name={focused ? 'hand-left' : 'hand-left-outline'}
                 size={26}
                 color={focused ? '#007AFF' : '#999'}
               />
@@ -227,17 +265,18 @@ export default function AdminTabsLayout() {
           }}
         />
         <Tabs.Screen
-          name="(tabs)/about"
+          name="(tabs)/data"
           options={{
             tabBarIcon: ({ focused }) => (
               <Ionicons
-                name={focused ? 'book' : 'book-outline'}
-                size={26}
+                name={focused ? 'analytics' : 'analytics-outline'}
+                size={30}
                 color={focused ? '#007AFF' : '#999'}
               />
             ),
           }}
         />
+        
         <Tabs.Screen
           name="(tabs)/menu"
           options={{
@@ -251,39 +290,42 @@ export default function AdminTabsLayout() {
           }}
         />
       </Tabs>
-    {showDropdown && (
-    <View style={styles.dropdownOverlay}>
-      <Text style={styles.dropdownHeaderText}>Notifications</Text>
+      {/* ===============================
+         NOTIFICATION DROPDOWN
+      =============================== */}
+      {showDropdown && (
+        <View style={styles.dropdownOverlay}>
+          <Text style={styles.dropdownHeaderText}>Notifications</Text>
+
           {notifications.length > 0 ? (
-            <ScrollView
-              style={{ flex: 1 }}
-              contentContainerStyle={{ paddingBottom: 10 }}
-              showsVerticalScrollIndicator={true}
-            >
-              {notifications.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={styles.dropdownItem}
-                  onPress={() => console.log('Notification pressed:', item)}
-                >
-                  <Text
-                    style={[
-                      styles.dropdownText,
-                      !item.isViewed && styles.unreadText,
-                    ]}
-                  >
-                    {String(item.content)}
-                  </Text>
-                  <Text style={styles.dateText}>{formatDate(item.date)}</Text>
-                </TouchableOpacity>
-              ))}
+            <ScrollView showsVerticalScrollIndicator>
+              {notifications.map(item => {
+                const isRead = userStatus[item.id]?.isViewed;
+
+                return (
+                  <View key={item.id} style={styles.dropdownItem}>
+                    <Text
+                      style={[
+                        styles.dropdownText,
+                        !isRead && styles.unreadText,
+                      ]}
+                    >
+                      {String(item.content)}
+                    </Text>
+                    <Text style={styles.dateText}>
+                      {formatDate(item.date)}
+                    </Text>
+                  </View>
+                );
+              })}
             </ScrollView>
           ) : (
-            <Text style={styles.dropdownText}>No notifications</Text>
+            <Text style={styles.dropdownText}>
+              No notifications
+            </Text>
           )}
-      </View>
-    )}
-
+        </View>
+      )}
     </View>
   );
 }
@@ -299,10 +341,10 @@ const styles = StyleSheet.create({
     height: 36,
   },
   appNameText: {
-    fontFamily: 'Poppins-Medium',
+    fontFamily: 'Inter-Black',
     fontSize: 18,
-    marginLeft: 6,
-    color: '#333',
+    marginLeft: 0,
+    color: 'white',
   },
   notificationButton: {
     marginRight: 16,
@@ -357,10 +399,9 @@ const styles = StyleSheet.create({
     elevation: 6,
     zIndex: 9999,
   },
-  
   dropdownHeaderText: {
     fontSize: 16,
-    fontFamily: 'Poppins-SemiBold',
+    fontFamily: 'Inter-Bold',
     color: '#111',
     marginBottom: 6,
   },
@@ -372,7 +413,7 @@ const styles = StyleSheet.create({
   dropdownText: {
     fontSize: 14,
     color: '#333',
-    fontFamily: 'Poppins-Regular',
+    fontFamily: 'Inter-Medium',
   },
   unreadText: {
     fontWeight: '600',
@@ -381,5 +422,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     textAlign: 'right',
+    fontFamily: 'Inter-Italic',
   },
 });

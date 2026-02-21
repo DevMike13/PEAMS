@@ -22,7 +22,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.peams.app"
+      "package": "com.peams.app",
+      "googleServicesFile" : "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -35,7 +36,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "762fcaf0-cf9a-4bac-a482-08bab8580a58"
+        "projectId": "69562aad-aead-46b9-ac87-d6fa0629547e"
       }
     },
     "owner": "hy-mike"

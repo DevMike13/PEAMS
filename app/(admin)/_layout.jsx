@@ -9,6 +9,7 @@ import {
   doc 
 } from 'firebase/firestore';
 import { firestoreDB } from '../../firebase';
+import { useAuthStore } from '../../store/useAuthStore';
 import { Text, View, StyleSheet, Image, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { images } from '../../constants';
@@ -16,59 +17,109 @@ import LottieView from 'lottie-react-native';
 
 export default function AdminTabsLayout() {
   const [notifications, setNotifications] = useState([]);
+  const [userStatus, setUserStatus] = useState({});
   const [showDropdown, setShowDropdown] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  const { user } = useAuthStore();
 
   useEffect(() => {
     const q = query(
       collection(firestoreDB, 'notifications'),
       orderBy('date', 'desc')
     );
-  
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const notifList = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }));
-  
+
       setNotifications(notifList);
-  
-      const unread = notifList.filter(n => !n.isViewed).length;
-      setUnreadCount(unread);
     });
-  
+
     return () => unsubscribe();
   }, []);
 
+  /* ===============================
+     LISTEN TO USER READ STATUS
+  =============================== */
+  useEffect(() => {
+    if (!user) return;
+
+    const statusRef = collection(
+      firestoreDB,
+      'users',
+      user.uid,
+      'notificationStatus'
+    );
+
+    const unsubscribe = onSnapshot(statusRef, (snapshot) => {
+      const statusMap = {};
+      snapshot.docs.forEach(doc => {
+        statusMap[doc.id] = doc.data();
+      });
+
+      setUserStatus(statusMap);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  /* ===============================
+     COMPUTE UNREAD COUNT
+  =============================== */
+  useEffect(() => {
+    const unread = notifications.filter(
+      n => !userStatus[n.id]?.isViewed
+    ).length;
+
+    setUnreadCount(unread);
+  }, [notifications, userStatus]);
+
+  /* ===============================
+     MARK AS VIEWED (PER USER)
+  =============================== */
   const markNotificationsAsViewed = async () => {
+    if (!user) return;
+
     const batch = writeBatch(firestoreDB);
-  
+
     notifications.forEach(n => {
-      if (!n.isViewed) {
-        const notifRef = doc(firestoreDB, 'notifications', n.id);
-        batch.update(notifRef, { isViewed: true });
+      if (!userStatus[n.id]?.isViewed) {
+        const statusRef = doc(
+          firestoreDB,
+          'users',
+          user.uid,
+          'notificationStatus',
+          n.id
+        );
+
+        batch.set(statusRef, { isViewed: true });
       }
     });
-  
+
     await batch.commit();
   };
 
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
+
     const dateObj = timestamp.toDate();
-    return (
-      dateObj.toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      }) +
-      ' ' +
-      dateObj.toLocaleTimeString(undefined, {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      })
-    );
+
+    const formattedDate = dateObj.toLocaleDateString('en-US', {
+      month: 'short',
+      day: '2-digit',
+      year: 'numeric',
+    });
+
+    const formattedTime = dateObj.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }).replace(' ', '');
+
+    return `${formattedDate} - ${formattedTime}`;
   };
 
   // const NotificationDropdown = () => {
@@ -153,9 +204,13 @@ export default function AdminTabsLayout() {
           headerRight: () => (
             <View>
               <TouchableOpacity
-                onPress={() => {
-                  setShowDropdown(!showDropdown);
-                  if (!showDropdown) markNotificationsAsViewed();
+                onPress={async () => {
+                  const opening = !showDropdown;
+                  setShowDropdown(opening);
+
+                  if (opening) {
+                    await markNotificationsAsViewed();
+                  }
                 }}
                 style={styles.notificationButton}
               >
@@ -252,38 +307,42 @@ export default function AdminTabsLayout() {
           }}
         />
       </Tabs>
+      {/* ===============================
+         NOTIFICATION DROPDOWN
+      =============================== */}
       {showDropdown && (
         <View style={styles.dropdownOverlay}>
           <Text style={styles.dropdownHeaderText}>Notifications</Text>
-            {notifications.length > 0 ? (
-              <ScrollView
-                style={{ flex: 1 }}
-                contentContainerStyle={{ paddingBottom: 10 }}
-                showsVerticalScrollIndicator={true}
-              >
-                {notifications.map((item) => (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={styles.dropdownItem}
-                    onPress={() => console.log('Notification pressed:', item)}
-                  >
+
+          {notifications.length > 0 ? (
+            <ScrollView showsVerticalScrollIndicator>
+              {notifications.map(item => {
+                const isRead = userStatus[item.id]?.isViewed;
+
+                return (
+                  <View key={item.id} style={styles.dropdownItem}>
                     <Text
                       style={[
                         styles.dropdownText,
-                        !item.isViewed && styles.unreadText,
+                        !isRead && styles.unreadText,
                       ]}
                     >
                       {String(item.content)}
                     </Text>
-                    <Text style={styles.dateText}>{formatDate(item.date)}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            ) : (
-              <Text style={styles.dropdownText}>No notifications</Text>
-            )}
-          </View>
-        )}
+                    <Text style={styles.dateText}>
+                      {formatDate(item.date)}
+                    </Text>
+                  </View>
+                );
+              })}
+            </ScrollView>
+          ) : (
+            <Text style={styles.dropdownText}>
+              No notifications
+            </Text>
+          )}
+        </View>
+      )}
     </View>
   );
 }
@@ -359,7 +418,7 @@ const styles = StyleSheet.create({
   },
   dropdownHeaderText: {
     fontSize: 16,
-    fontFamily: 'Poppins-SemiBold',
+    fontFamily: 'Inter-Bold',
     color: '#111',
     marginBottom: 6,
   },
@@ -371,7 +430,7 @@ const styles = StyleSheet.create({
   dropdownText: {
     fontSize: 14,
     color: '#333',
-    fontFamily: 'Poppins-Regular',
+    fontFamily: 'Inter-Medium',
   },
   unreadText: {
     fontWeight: '600',
@@ -380,5 +439,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     textAlign: 'right',
+    fontFamily: 'Inter-Italic',
   },
 });

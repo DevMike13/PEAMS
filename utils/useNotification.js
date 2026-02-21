@@ -5,7 +5,7 @@ import { firestoreDB } from '../firebase';
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, addDoc, doc, setDoc } from "firebase/firestore";
 
 export const usePushNotification = () => {
   Notifications.setNotificationHandler({
@@ -80,32 +80,58 @@ export const usePushNotification = () => {
   }, []);
 
   // Store token in Firestore
+  // const storeDeviceTokenInFirestore = async (token) => {
+  //   try {
+  //     const tokenString = token.data; // Expo token string
+  //     await AsyncStorage.setItem("expoPushToken", tokenString);
+  
+  //     const deviceTokensRef = collection(firestoreDB, "deviceTokens");
+  //     const q = query(deviceTokensRef, where("token", "==", tokenString)); // query on string, not nested field
+  //     const querySnapshot = await getDocs(q);
+  
+  //     if (querySnapshot.empty) {
+  //       await addDoc(deviceTokensRef, { token: tokenString }); // save only string
+  //       console.log("✅ Device Token stored in Firestore:", tokenString);
+  //     } else {
+  //       console.log("ℹ️ Device Token already exists:", tokenString);
+  //     }
+  //   } catch (error) {
+  //     console.error("❌ Error storing device token in Firestore:", error);
+  //   }
+  // };
+  
   const storeDeviceTokenInFirestore = async (token) => {
     try {
-      const tokenString = token.data; // Expo token string
-      await AsyncStorage.setItem("expoPushToken", tokenString);
-  
-      const deviceTokensRef = collection(firestoreDB, "deviceTokens");
-      const q = query(deviceTokensRef, where("token", "==", tokenString)); // query on string, not nested field
-      const querySnapshot = await getDocs(q);
-  
-      if (querySnapshot.empty) {
-        await addDoc(deviceTokensRef, { token: tokenString }); // save only string
-        console.log("✅ Device Token stored in Firestore:", tokenString);
-      } else {
-        console.log("ℹ️ Device Token already exists:", tokenString);
-      }
+      const tokenString = token.data;
+      const tokenDoc = doc(firestoreDB, "deviceTokens", tokenString);
+      await setDoc(tokenDoc, { token: tokenString }, { merge: true });
+      console.log("✅ Device token stored in Firestore:", tokenString);
     } catch (error) {
-      console.error("❌ Error storing device token in Firestore:", error);
+      console.error("Error storing device token in Firestore:", error);
     }
   };
-  
+
+  // const registerAndStorePushToken = async () => {
+  //   const token = await registerForPushNotificationsAsync();
+  //   if (token) {
+  //     setExpoPushToken(token);
+  //     storeDeviceTokenInFirestore(token);
+  //   }
+  // };
 
   const registerAndStorePushToken = async () => {
-    const token = await registerForPushNotificationsAsync();
-    if (token) {
-      setExpoPushToken(token);
-      storeDeviceTokenInFirestore(token);
+    try {
+      const token = await registerForPushNotificationsAsync();
+      if (!token) return;
+  
+      const tokenString = token.data;
+      setExpoPushToken(tokenString);
+
+      await storeDeviceTokenInFirestore(token);
+  
+      await AsyncStorage.setItem("expoPushToken", tokenString);
+    } catch (err) {
+      console.error("Error in registerAndStorePushToken:", err);
     }
   };
 
