@@ -403,6 +403,7 @@ export default function DailyReport() {
               {/* Chicken Quantity */}
               <Text style={styles.label}>Chicken Quantity</Text>
               <TextInput
+                placeholderTextColor="#9CA3AF"
                 style={styles.dateBox}
                 keyboardType="numeric"
                 placeholder="Enter number of chickens"
@@ -435,6 +436,7 @@ export default function DailyReport() {
                 {/* Notes */}
                 <Text style={styles.label}>Notes (Optional)</Text>
                 <TextInput
+                  placeholderTextColor="#9CA3AF"
                   style={styles.notesBox}
                   multiline
                   placeholder="Enter any notes..."
@@ -500,6 +502,7 @@ export default function DailyReport() {
 
               <Text style={styles.label}>Mortality Count</Text>
               <TextInput
+                placeholderTextColor="#9CA3AF"
                 style={styles.dateBox}
                 keyboardType="numeric"
                 placeholder="Enter number of birds"
@@ -602,6 +605,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 5,
     backgroundColor: "#fff",
+    color: '#000'
   },
   dateText: {
     fontSize: 14,
@@ -624,6 +628,7 @@ const styles = StyleSheet.create({
     height: 90,
     backgroundColor: "#fff",
     fontFamily: "Inter-Regular",
+    color: '#000'
   },
   notesInput: {
     paddingHorizontal: 10,

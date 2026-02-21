@@ -198,6 +198,7 @@ const Register = () => {
                   ]}
                 >
                   <TextInput 
+                    placeholderTextColor="#9CA3AF"
                     placeholder="Enter Fullname" 
                     value={fullname}
                     onChangeText={setFullname} 
@@ -219,6 +220,7 @@ const Register = () => {
                   ]}
                 >
                   <TextInput 
+                    placeholderTextColor="#9CA3AF"
                     placeholder="Enter email" 
                     value={email}
                     onChangeText={setEmail} 
@@ -242,6 +244,7 @@ const Register = () => {
                 >
                   <TextInput 
                     placeholder="Enter password" 
+                    placeholderTextColor="#9CA3AF"
                     onFocus={() => setIsFocusedPassword(true)} 
                     onBlur={() => setIsFocusedPassword(false)} 
                     secureTextEntry={!showPassword} 
@@ -266,6 +269,7 @@ const Register = () => {
                 <View style={[styles.inputContainer, isFocusedConfirmPassword && styles.inputContainerFocused]}>
                   <TextInput
                     placeholder="Confirm password"
+                    placeholderTextColor="#9CA3AF"
                     onFocus={() => setIsFocusedConfirmPassword(true)}
                     onBlur={() => setIsFocusedConfirmPassword(false)}
                     secureTextEntry={!showConfirmPassword}

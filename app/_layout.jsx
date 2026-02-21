@@ -38,7 +38,7 @@ export default function Layout() {
   });
 
   // ✅ Grab push notification utils
-  const { registerAndStorePushToken } = usePushNotification();
+  const { registerAndStorePushToken, expoPushToken } = usePushNotification();
 
   // Notification listener (only once)
   useEffect(() => {
@@ -134,14 +134,9 @@ export default function Layout() {
   }, [segments, user, role, loading, hasMounted]);
 
   useEffect(() => {
-    if (__DEV__) {
-      if (!global.pushTokenRegistered) {
-        global.pushTokenRegistered = true;
-        registerAndStorePushToken();
-      }
-    } else {
-      registerAndStorePushToken();
-    }
+    // if (user) {
+      registerAndStorePushToken(); 
+    // }
   }, []);
 
   if (!fontsLoaded && !error) {

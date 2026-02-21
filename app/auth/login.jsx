@@ -104,6 +104,7 @@ const Login = () => {
               <View style={[styles.inputContainer, isFocusedEmail && styles.inputContainerFocused]}>
                 <TextInput
                   placeholder="Enter email"
+                  placeholderTextColor="#9CA3AF"
                   value={email}
                   onChangeText={setEmail}
                   style={styles.input}
@@ -121,6 +122,7 @@ const Login = () => {
               <View style={[styles.inputContainer, isFocusedPassword && styles.inputContainerFocused]}>
                 <TextInput
                   placeholder="Enter password"
+                  placeholderTextColor="#9CA3AF"
                   secureTextEntry={!showPassword}
                   value={password}
                   onChangeText={setPassword}

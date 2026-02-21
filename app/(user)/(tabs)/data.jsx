@@ -625,5 +625,6 @@ const styles = StyleSheet.create({
   },
   picker: {
     width: '100%',
+    color: '#000'
   },
 });

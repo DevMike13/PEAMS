@@ -67,6 +67,7 @@ const ForgotPassword = () => {
               <TextInput
                 placeholder="Enter email"
                 value={email}
+                placeholderTextColor="#9CA3AF"
                 onChangeText={setEmail}
                 style={styles.input}
                 onFocus={() => setIsFocusedEmail(true)}

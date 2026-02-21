@@ -83,6 +83,7 @@ const OtpScreen = () => {
             <View style={[styles.inputContainer, isFocusedOtp && styles.inputContainerFocused]}>
               <TextInput
                 placeholder="Enter OTP"
+                placeholderTextColor="#9CA3AF"
                 keyboardType="numeric"
                 value={otp}
                 onChangeText={setOtp}
